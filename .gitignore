@@ -1,0 +1,49 @@
+## 🗂️ .gitignore
+
+# Binaries
+onefile
+/bin/
+/*.exe
+/*.exe~
+/*.dll
+/*.so
+/*.dylib
+
+# Output files
+/*.txt
+/*.log
+
+# Test binary, build with `go test -c`
+/*.test
+
+# Coverage files
+/coverage.out
+
+# Vendor directory (if using Go modules)
+/vendor/
+
+# Go workspace file
+/go.work
+
+# IDE and editor directories
+/.idea/
+/.vscode/
+/*.swp
+.DS_Store
+
+# OS-specific files
+Thumbs.db
+ehthumbs.db
+
+# Configuration files (if any sensitive data)
+config.yaml
+
+# Temporary files
+/tmp/
+*.tmp
+*.bak
+
+# Others
+*.pid
+*.seed
+*.lock

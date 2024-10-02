@@ -1,0 +1,17 @@
+output: combined.txt
+input_dirs:
+  - /path/to/dir1
+  - /path/to/dir2
+exclude_folders:
+  - /path/to/dir1/exclude_this_folder
+  - /path/to/dir2/another_excluded_folder
+exclude_files:
+  - /path/to/dir1/file_to_exclude.txt
+  - /path/to/dir2/another_file_to_exclude.md
+# Optional Enhancements:
+# include_file_types:
+#   - .txt
+#   - .md
+# exclude_file_types:
+#   - .log
+# log_level: info
