@@ -29,6 +29,9 @@ type Config struct {
 func main() {
     // Define and parse command-line flags
     configPath := flag.String("config", "config.yaml", "Path to the YAML configuration file")
+	// Add this line with other flag definitions
+	split := flag.Bool("split", false, "Split the combined output file into two nearly equal halves")
+
     flag.Parse()
 
     // Read and parse the YAML configuration
@@ -174,6 +177,21 @@ func main() {
     wg.Wait()
 
     fmt.Printf("All files have been combined into '%s'\n", config.Output)
+
+	    // Handle splitting if the -split flag is set
+		if *split {
+			err := splitFile(config.Output)
+			if err != nil {
+				fmt.Printf("Error splitting the file '%s': %v\n", config.Output, err)
+				os.Exit(1)
+			}
+			fmt.Printf("The file '%s' has been split into '%s_part1%s' and '%s_part2%s'\n",
+			config.Output,
+				strings.TrimSuffix(config.Output, filepath.Ext(config.Output)),
+				filepath.Ext(config.Output),
+				strings.TrimSuffix(config.Output, filepath.Ext(config.Output)),
+				filepath.Ext(config.Output))
+		}
 }
 
 // parseConfig reads and parses the YAML configuration file
@@ -225,4 +243,76 @@ func appendFileContent(filePath string, writer *bufio.Writer, mutex *sync.Mutex)
     _, err = io.Copy(writer, file)
     mutex.Unlock()
     return err
+}
+
+// splitFile splits the given file into two nearly equal halves based on the number of lines.
+func splitFile(filePath string) error {
+    // Open the combined file for reading
+    file, err := os.Open(filePath)
+    if err != nil {
+        return fmt.Errorf("failed to open the combined file: %v", err)
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    var lines []string
+    for scanner.Scan() {
+        lines = append(lines, scanner.Text())
+    }
+
+    if err := scanner.Err(); err != nil {
+        return fmt.Errorf("error reading the combined file: %v", err)
+    }
+
+    totalLines := len(lines)
+    if totalLines == 0 {
+        return fmt.Errorf("the combined file is empty")
+    }
+
+    // Determine the split point
+    splitPoint := totalLines / 2
+
+    // Define the names for the split files
+    ext := filepath.Ext(filePath)
+    baseName := strings.TrimSuffix(filePath, ext)
+    part1 := fmt.Sprintf("%s_part1%s", baseName, ext)
+    part2 := fmt.Sprintf("%s_part2%s", baseName, ext)
+
+    // Write the first half to part1
+    err = writeLinesToFile(part1, lines[:splitPoint])
+    if err != nil {
+        return fmt.Errorf("failed to write to %s: %v", part1, err)
+    }
+
+    // Write the second half to part2
+    err = writeLinesToFile(part2, lines[splitPoint:])
+    if err != nil {
+        return fmt.Errorf("failed to write to %s: %v", part2, err)
+    }
+
+    return nil
+}
+
+// writeLinesToFile writes the given lines to the specified file.
+func writeLinesToFile(filePath string, lines []string) error {
+    outFile, err := os.Create(filePath)
+    if err != nil {
+        return fmt.Errorf("failed to create file %s: %v", filePath, err)
+    }
+    defer outFile.Close()
+
+    writer := bufio.NewWriter(outFile)
+    for _, line := range lines {
+        _, err := writer.WriteString(line + "\n")
+        if err != nil {
+            return fmt.Errorf("failed to write to file %s: %v", filePath, err)
+        }
+    }
+
+    // Flush the buffer to ensure all data is written
+    if err := writer.Flush(); err != nil {
+        return fmt.Errorf("failed to flush writer for file %s: %v", filePath, err)
+    }
+
+    return nil
 }
