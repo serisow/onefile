@@ -1,5 +1,10 @@
 ## 🗂️ .gitignore
 
+# My folders
+lesocle
+fonek
+llm-context
+
 # Binaries
 onefile
 /bin/

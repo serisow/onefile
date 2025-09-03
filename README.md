@@ -46,6 +46,7 @@ Create a `config.yaml` file in your project directory with the following structu
 
 ```yaml
 output: combined.txt
+output_dir: ./output
 input_dirs:
   - /path/to/dir1
   - /path/to/dir2
@@ -67,6 +68,7 @@ exclude_files:
 #### Configuration Fields
 
 - **output**: *(string)* Name of the output file. Defaults to `combined.txt` if not specified.
+- **output_dir**: *(string)* *(Optional)* The directory where the output file will be saved. If not specified, the file will be saved in the current directory.
 - **input_dirs**: *(list of strings)* Paths to the input directories containing files to be combined.
 - **exclude_folders**: *(list of strings)* Paths to folders that should be excluded from processing.
 - **exclude_files**: *(list of strings)* Specific file paths to exclude from the aggregation.
@@ -98,6 +100,7 @@ Here's a sample `config.yaml` for reference:
 
 ```yaml
 output: all_code_combined.txt
+output_dir: ./generated_output
 input_dirs:
   - /home/user/projects/project1
   - /home/user/projects/project2
