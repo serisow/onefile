@@ -1,4 +1,4 @@
 output: onefile.txt
 output_dir: .
 input_dirs:
-  - /home/ssow/dev/go-project/onefile/src
+  - ./src

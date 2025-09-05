@@ -1,123 +1,95 @@
-Of course. Here is a rewritten, simplified `README.md` that keeps only the essential information and clearly describes the new usage flow.
-
-This version is more direct, easier to scan, and focuses on the practical steps a user needs to take.
-
----
-
 # 🗂️ OneFile
 
-A command-line tool to combine multiple source files into a single text file, perfect for providing context to LLMs, creating archives, or generating documentation.
+A smart command-line tool to combine multiple source files into a single text file. Perfect for providing context to LLMs, creating project archives, or generating documentation.
 
-## Features
+OneFile follows a **convention over configuration** approach. It works out-of-the-box with smart defaults, requiring minimal to zero configuration for most projects.
 
--   **Recursive Processing:** Scans specified directories to find all files.
--   **YAML Configuration:** A simple `config.yaml` to define what to include and exclude.
--   **Exclusion Rules:** Ignore specific folders (like `.git`, `node_modules`) and files.
--   **Concurrent:** Processes files in parallel for improved speed.
--   **File Splitting:** Optionally splits the final output file into two parts.
+## How It Works
+
+-   **Zero-Config Ready:** Run it in your project root, and it automatically scans everything.
+-   **Smart Defaults:** By default, it looks for a `config-onefile.yml` file, reads from the current directory (`.`), and writes to `onefile.txt`.
+-   **Auto-Exclusions:** Automatically ignores common folders (`.git`, `node_modules`, `vendor`) and files (its own binary, the config file, `go.mod`, etc.) so you don't have to.
 
 ## Installation
 
-### Option 1: Global (Recommended)
-
-Build the binary and move it to a location in your system's `PATH` so you can run it from any directory.
-
-1.  **Build:**
+1.  **Build the binary:**
     ```bash
     go build -o onefile main.go
     ```
-2.  **Move (Linux/macOS):**
+
+2.  **Make the binary accessible:**
+    -   **Option 1: Global (Recommended)**
+        Move the binary to a directory in your system's `PATH`.
+
+        *For system-wide access on Linux/macOS (requires admin rights):*
+        ```bash
+        sudo mv onefile /usr/local/bin/
+        ```
+        *For user-specific access (common for Go developers):*
+        ```bash
+        # Ensure '~/go/bin' is in your $PATH
+        mv onefile ~/go/bin/
+        ```
+
+    -   **Option 2: Local**
+        Place the `onefile` binary in your project's root directory.
+
+## Quick Start: Zero Configuration
+
+For most projects, no configuration is needed.
+
+1.  **Navigate to your project root:**
     ```bash
-    # Make sure ~/go/bin is in your $PATH
-    mv onefile ~/go/bin/
+    cd /path/to/my-project/
     ```
-    **Move (Windows):**
-    Move `onefile.exe` to a folder that is included in your `Path` environment variable.
+2.  **Run the tool:**
+    ```bash
+    # If installed globally
+    onefile
 
-### Option 2: Portable
+    # If using the local binary in your project
+    ./onefile
+    ```
 
-Place the compiled `onefile` binary in a known location. You will run it by providing the path to the binary.
+OneFile will scan the project, apply default exclusions, and create `onefile.txt` in the root.
 
-## Usage Flow
+## Customizing with `config-onefile.yml`
 
-Here is the standard workflow for using `onefile` with your project.
+To override defaults, create a `config-onefile.yml` file in your project root. You only need to specify what you want to change.
 
-### 1. Set up Your Project
+#### Example
 
-For this example, assume your project has this structure:
+To combine only the files in the `src` directory and name the output `app_context.txt`:
 
-```
-/path/to/my-project/
-├── src/
-│   ├── main.go
-│   └── utils.go
-├── docs/
-│   └── guide.md
-├── .git/
-│   └── ...
-└── README.md
-```
-
-### 2. Create `config.yaml`
-
-In the root of your project (`/path/to/my-project/`), create a `config.yaml` file. This file tells `onefile` what to do.
-
-**`config.yaml`:**
+**`config-onefile.yml`:**
 ```yaml
-# The name of the final combined file.
-output: combined_context.txt
-
-# The directories to scan for files.
-# Paths are relative to this config file's location.
+output: app_context.txt
 input_dirs:
   - ./src
-  - ./docs
-
-# Folders to completely ignore.
-exclude_folders:
-  - ./.git
-  - ./vendor
-
-# Specific files to ignore.
-exclude_files:
-  - ./docs/guide.md
 ```
-
-### 3. Run the Tool
-
-Open your terminal and run the `onefile` command, pointing it to your configuration file.
-
-*   **If you installed it globally:**
-    ```bash
-    # Run from anywhere
-    onefile -config /path/to/my-project/config.yaml
-    ```
-
-*   **If using the portable binary:**
-    ```bash
-    # Run from the directory containing the binary
-    ./onefile -config /path/to/my-project/config.yaml
-    ```
-
-*   **To also split the output file:**
-    ```bash
-    onefile -config /path/to/my-project/config.yaml -split
-    ```
-
-### 4. Get the Output
-
-The tool will create `combined_context.txt` in the same directory as your `config.yaml`. The file will contain the contents of `main.go`, `utils.go`, and `README.md`, each with a clear header indicating its original path.
+Run `onefile`, and it will automatically use this configuration.
 
 ## Configuration Reference
 
--   `output` (string): Name of the generated file. Defaults to `combined.txt`.
--   `output_dir` (string, *optional*): A directory where the output file will be saved.
--   `input_dirs` (list of strings): List of directories to scan for files. Paths can be absolute or relative to the `config.yaml` location.
--   `exclude_folders` (list of strings): List of directories to exclude from scanning.
--   `exclude_files` (list of strings): List of specific files to exclude.
+-   `output` (string): Name of the generated file.
+    -   **Default:** `onefile.txt`
+-   `input_dirs` (list of strings): Directories to scan. Paths are relative to the config file.
+    -   **Default:** `["."]` (the current directory)
+-   `exclude_folders` (list of strings): Add extra folders to the built-in exclusion list.
+-   `exclude_files` (list of strings): Add specific files to exclude by their full path.
 
-*The following features are planned but not yet implemented:*
-```yaml
-# include_file_types: [".go", ".md"] # To only include files with these extensions.
-# exclude_file_types: [".log", ".tmp"] # To exclude files with these extensions.
-```
+#### Built-in Exclusions
+You do not need to manually exclude these:
+-   **Folders:** `.git`, `.vscode`, `.idea`, `vendor`, `node_modules`, `bin`, `obj`, `dist`, `build`
+-   **Files:** The `onefile` binary, `config-onefile.yml`, the output file itself, `go.mod`, `go.sum`, `package-lock.json`, `yarn.lock`.
+
+## Command-Line Flags
+
+-   `-split`: Splits the final output file into two roughly equal parts (appends `_part1` and `_part2` to the filenames).
+    ```bash
+    onefile -split
+    ```
+-   `-config <path>`: Use a configuration file from a non-standard location.
+    ```bash
+    onefile -config ./configs/custom_config.yml
+    ```
